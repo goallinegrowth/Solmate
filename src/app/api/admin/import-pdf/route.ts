@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const base64Data = buffer.toString("base64");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-pro",
+      model: "gemini-3.1-pro-preview",
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         responseMimeType: "application/json",
