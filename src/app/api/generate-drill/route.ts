@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { anthropic } from "@/lib/anthropic";
+import { genAI } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { DRILL_CATEGORIES } from "@/lib/categories";
 
@@ -110,26 +110,22 @@ export async function POST(request: NextRequest) {
       teamId = team!.id;
     }
 
-    // ----- Call Claude to generate drill plan -----
-    const message = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
-      messages: [
-        {
-          role: "user",
-          content: `Here is the coach's voice transcript. Turn it into a structured drill plan:\n\n"${body.voice_transcript}"`,
-        },
-      ],
-      system: SYSTEM_PROMPT,
+    // ----- Call Gemini to generate drill plan -----
+    const model = genAI.getGenerativeModel({
+      model: "gemini-3.1-pro",
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
     });
 
-    // Extract text content from Claude's response
-    const textBlock = message.content.find((block) => block.type === "text");
+    const result = await model.generateContent(`Here is the coach's voice transcript. Turn it into a structured drill plan:\n\n"${body.voice_transcript}"`);
+    const responseText = result.response.text();
     
-    console.log("=== API GENERATE DRILL: CLAUDE RESPONSE ===");
-    console.log(textBlock ? textBlock.text : "No text block found");
+    console.log("=== API GENERATE DRILL: GEMINI RESPONSE ===");
+    console.log(responseText);
 
-    if (!textBlock || textBlock.type !== "text") {
+    if (!responseText) {
       return NextResponse.json(
         { error: "No text response received from AI." },
         { status: 502 }
@@ -139,12 +135,12 @@ export async function POST(request: NextRequest) {
     // Parse the JSON response
     let drillPlan: GeneratedDrill;
     try {
-      drillPlan = JSON.parse(textBlock.text);
+      drillPlan = JSON.parse(responseText);
     } catch {
       return NextResponse.json(
         {
           error: "AI returned invalid JSON.",
-          raw_response: textBlock.text,
+          raw_response: responseText,
         },
         { status: 502 }
       );
