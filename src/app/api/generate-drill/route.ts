@@ -35,7 +35,7 @@ interface GenerateDrillRequest {
 // System prompt for Claude
 // ============================================
 
-const SYSTEM_PROMPT = `You are SolMate, an expert AI coaching assistant for Sol Sports Club, a youth soccer academy in Central Florida.
+const BASE_SYSTEM_PROMPT = `You are SolMate, an expert AI coaching assistant for Sol Sports Club, a youth soccer academy in Central Florida.
 
 Your job is to take a coach's voice transcript — their raw spoken description of what they want to work on — and turn it into a professional, structured drill plan.
 
@@ -63,9 +63,7 @@ RULES:
 - Always include 3–8 steps depending on complexity.
 - Step durations must sum to the total duration_minutes.
 - Include warm-up and cool-down steps when appropriate.
-- Use age-appropriate language and drills for youth soccer (ages 6–18).
-- Be specific with coaching cues: "plant foot beside the ball" not "kick it properly".
-- If the transcript is vague, infer reasonable defaults and make the drill practical.`;
+- Be specific with coaching cues.`;
 
 // ============================================
 // POST /api/generate-drill
@@ -110,10 +108,35 @@ export async function POST(request: NextRequest) {
       teamId = team!.id;
     }
 
+    // ----- Apply The Prime Directive -----
+    // Fetch team age group to dictate the standard
+    const { data: teamData } = await supabase.from("teams").select("age_group").eq("id", teamId).single();
+    let targetAgeGroup = teamData?.age_group;
+    if (!targetAgeGroup) {
+      targetAgeGroup = "U11-U12";
+      console.log(`Team missing age group. Defaulting to \${targetAgeGroup} standard.`);
+    }
+
+    const { data: standardData } = await supabase.from("coaching_standards").select("*").eq("age_group", targetAgeGroup).limit(1).single();
+    
+    let injectedPrompt = BASE_SYSTEM_PROMPT;
+    if (standardData) {
+      console.log(`Applying US Soccer Brain-Lift directive for \${targetAgeGroup}`);
+      injectedPrompt += `\n\nTHE PRIME DIRECTIVE:
+You are now a US Soccer Certified Technical Director. Before generating any drill, check these standards to ensure the tactical focus and field size match the US Soccer developmental pathway for the \${targetAgeGroup} level:
+- Key Qualities: \${standardData.key_qualities}
+- Tactical Focus: \${standardData.tactical_focus}
+- Recommended Field Size: \${standardData.field_size || "Standard"}
+
+The drill you output MUST respect this developmental framework.`;
+    } else {
+      console.log(`No explicit coaching standard found for \${targetAgeGroup}, proceeding with default AI defaults.`);
+    }
+
     // ----- Call Gemini to generate drill plan -----
     const model = genAI.getGenerativeModel({
       model: "gemini-3.1-pro",
-      systemInstruction: SYSTEM_PROMPT,
+      systemInstruction: injectedPrompt,
       generationConfig: {
         responseMimeType: "application/json",
       },
