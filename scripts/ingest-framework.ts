@@ -36,7 +36,7 @@ async function main() {
     console.log("Analyzing US Soccer PDF with Gemini 3.1 Pro...");
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-pro",
+      model: "gemini-1.5-pro",
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         responseMimeType: "application/json",

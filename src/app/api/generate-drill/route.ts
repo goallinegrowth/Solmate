@@ -135,7 +135,7 @@ The drill you output MUST respect this developmental framework.`;
 
     // ----- Call Gemini to generate drill plan -----
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-pro",
+      model: "gemini-1.5-pro",
       systemInstruction: injectedPrompt,
       generationConfig: {
         responseMimeType: "application/json",
