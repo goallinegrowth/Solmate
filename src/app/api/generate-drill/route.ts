@@ -84,6 +84,13 @@ ${DRILL_CATEGORIES.map((c, i) => `${i + 1}. ${c}`).join("\n")}`;
 
 export async function POST(request: NextRequest) {
   try {
+    // ----- Quick Env Verification Check -----
+    if (!process.env.GEMINI_API_KEY || typeof process.env.GEMINI_API_KEY !== "string") {
+      console.error("CRITICAL: GEMINI_API_KEY is missing or invalid in environment.");
+    } else {
+      console.log("GEMINI_API_KEY exists (First 5):", process.env.GEMINI_API_KEY.substring(0, 5) + "...");
+    }
+
     // ----- Parse & validate request body -----
     const body: GenerateDrillRequest = await request.json();
 
@@ -148,7 +155,7 @@ The drill you output MUST respect this developmental framework.`;
 
     // ----- Call Gemini to generate drill plan -----
     const model = genAI.getGenerativeModel({
-      model: "gemini-3.1-pro-preview",
+      model: "gemini-1.5-flash",
       systemInstruction: injectedPrompt,
       generationConfig: {
         responseMimeType: "application/json",
@@ -156,9 +163,9 @@ The drill you output MUST respect this developmental framework.`;
     });
 
     const result = await model.generateContent(`Here is the coach's voice transcript. Turn it into a structured drill plan:\n\n"${body.voice_transcript}"`);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
     
-    console.log("=== API GENERATE DRILL: GEMINI RESPONSE ===");
+    console.log("=== API GENERATE DRILL: RAW GEMINI RESPONSE ===");
     console.log(responseText);
 
     if (!responseText) {
@@ -168,6 +175,9 @@ The drill you output MUST respect this developmental framework.`;
       );
     }
 
+    // Clean JSON Markdown Wrappers safely
+    responseText = responseText.replace(/```json\n?/g, "").replace(/```/g, "").trim();
+
     // Parse the JSON response
     let drillPlan: GeneratedDrill;
     try {
@@ -175,7 +185,7 @@ The drill you output MUST respect this developmental framework.`;
     } catch {
       return NextResponse.json(
         {
-          error: "AI returned invalid JSON.",
+          error: "AI returned invalid JSON after cleaning.",
           raw_response: responseText,
         },
         { status: 502 }
