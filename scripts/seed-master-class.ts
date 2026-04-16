@@ -83,7 +83,7 @@ async function seedMasterClass() {
   let teamId = team?.id;
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-3.1-pro-preview",
+    model: "gemini-3-flash",
     systemInstruction: BASE_SYSTEM_PROMPT,
     generationConfig: { responseMimeType: "application/json" }
   });

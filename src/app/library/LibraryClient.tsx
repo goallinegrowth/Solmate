@@ -10,6 +10,10 @@ interface Drill {
   category: string;
   duration_minutes: number;
   created_at: string;
+  drill_plan?: {
+    intensity: string;
+    technical_objective: string;
+  };
 }
 
 export default function LibraryClient({ initialDrills }: { initialDrills: Drill[] }) {
@@ -100,23 +104,45 @@ export default function LibraryClient({ initialDrills }: { initialDrills: Drill[
               >
                 <div className="absolute -top-6 -right-6 w-24 h-24 bg-[radial-gradient(circle,rgba(242,169,0,0.06)_0%,transparent_70%)]"></div>
                 
-                <div>
-                  <div className="inline-block px-2 py-0.5 bg-navy-light text-gold text-[9px] font-bold uppercase tracking-wider rounded-sm mb-2">
-                    {drill.category}
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1">
+                    <div className="inline-block px-2 py-0.5 bg-navy-light text-gold text-[9px] font-bold uppercase tracking-wider rounded-sm w-fit">
+                      {drill.category}
+                    </div>
+                    {drill.drill_plan?.intensity && (
+                      <div className={`text-[8px] font-black uppercase tracking-tighter ${
+                        drill.drill_plan.intensity === "High" ? "text-red-500" : 
+                        drill.drill_plan.intensity === "Med" ? "text-gold" : "text-teal"
+                      }`}>
+                        {drill.drill_plan.intensity} Intensity
+                      </div>
+                    )}
                   </div>
-                  <h3 className="font-bebas text-[22px] text-white tracking-[0.06em] leading-tight">
-                    {drill.title}
-                  </h3>
+
+                  <div className="text-gray text-[10px] font-bebas tracking-widest">
+                    {drill.duration_minutes || 0} MIN
+                  </div>
                 </div>
 
-                <div className="flex items-center justify-between mt-1">
-                  <div className="flex items-center gap-1.5 text-gray text-xs font-semibold">
-                    <span>⏱️</span>
-                    <span>{drill.duration_minutes || 0} MIN</span>
+                <div>
+                  <h3 className="font-bebas text-[22px] text-white tracking-[0.06em] leading-tight mb-1">
+                    {drill.title}
+                  </h3>
+                  {drill.drill_plan?.technical_objective && (
+                    <p className="text-[10px] text-gray/70 line-clamp-2 leading-snug">
+                      {drill.drill_plan.technical_objective}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between mt-auto pt-2">
+                  <div className="flex items-center gap-1">
+                    <div className="w-1.5 h-1.5 bg-gold rounded-full"></div>
+                    <div className="text-[9px] text-gray uppercase font-bold tracking-tighter">Verified Standard</div>
                   </div>
 
                   <Link href={`/drill/${drill.id}`}>
-                    <button className="bg-gold hover:bg-[#D4920A] text-background font-bebas text-[14px] px-4 py-1.5 rounded-lg transition-colors tracking-wide">
+                    <button className="bg-gold hover:bg-[#D4920A] text-background font-bebas text-[14px] px-4 py-1.5 rounded-lg transition-colors tracking-wide shadow-[0_4px_10px_rgba(242,169,0,0.2)]">
                       View Details
                     </button>
                   </Link>
