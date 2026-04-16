@@ -55,7 +55,7 @@ export default function BottomNav() {
         </button>
       </Link>
 
-      <Link href="/">
+      <Link href="/teams">
         <button
           className={`flex flex-col items-center gap-1 font-semibold text-[10px] px-3 py-1.5 transition-colors ${
             pathname === "/teams" ? "text-gold" : "text-gray hover:text-gold"
