@@ -28,7 +28,7 @@ export default async function TeamDashboard({ params }: { params: { id: string }
     .order("created_at", { ascending: false });
 
   // 3. Process HUD Data
-  const practicePlans = plans || [];
+  const practicePlans = (plans || []) as unknown as PracticePlanNode[];
   const completedSessions = practicePlans.length;
   
   interface PracticePlanNode {
