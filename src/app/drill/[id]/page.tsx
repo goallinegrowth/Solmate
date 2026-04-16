@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import DrillDiagram from "@/components/DrillDiagram";
+import AssignTeamDropdown from "./AssignTeamDropdown";
 import type { DrillCategory } from "@/lib/categories";
 
 interface DrillStep {
@@ -25,6 +26,12 @@ export default async function DrillDetailPage({
     .select("*, drill_steps(*)")
     .eq("id", params.id)
     .single();
+
+  // Fetch available teams for assignment dropdown
+  const { data: teams } = await supabase
+    .from("teams")
+    .select("id, name")
+    .order("name");
 
   if (!drill) {
     notFound();
@@ -112,14 +119,7 @@ export default async function DrillDetailPage({
         )}
       </div>
 
-      <div className="flex gap-2.5 mt-8">
-        <button className="flex-1 py-3.5 bg-gold text-dark border-none rounded-xl font-bebas text-[17px] tracking-[0.08em] cursor-pointer transition-all hover:-translate-y-[1px] hover:shadow-[0_6px_20px_rgba(242,169,0,0.3)]">
-          💾 Save to Library
-        </button>
-        <button className="flex-[0.6] py-3.5 bg-navy-light text-white border border-white/10 rounded-xl font-bebas text-[17px] tracking-[0.08em] cursor-pointer transition-all hover:bg-navy">
-          ↗ Share
-        </button>
-      </div>
+      <AssignTeamDropdown drillId={drill.id} teams={teams || []} />
     </main>
   );
 }
