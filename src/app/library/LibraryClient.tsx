@@ -14,11 +14,18 @@ interface Drill {
 
 export default function LibraryClient({ initialDrills }: { initialDrills: Drill[] }) {
   const [activeCategory, setActiveCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const filteredDrills =
-    activeCategory === "All"
-      ? initialDrills
-      : initialDrills.filter((drill) => drill.category === activeCategory);
+  const filteredDrills = initialDrills.filter((drill) => {
+    const categoryMatch = activeCategory === "All" || drill.category === activeCategory;
+    
+    const term = searchQuery.toLowerCase();
+    const titleMatch = drill.title.toLowerCase().includes(term);
+    const catMatch = drill.category.toLowerCase().includes(term);
+    const searchMatch = term === "" || titleMatch || catMatch;
+
+    return categoryMatch && searchMatch;
+  });
 
   return (
     <main className="min-h-screen px-5 pt-10 pb-24 bg-background">
@@ -29,6 +36,20 @@ export default function LibraryClient({ initialDrills }: { initialDrills: Drill[
         <p className="text-[#8A99B4] text-[13px] font-normal mb-6">
           Browse your academy&apos;s tactical playbook.
         </p>
+
+        {/* Search Bar */}
+        <div className="relative mb-6">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <span className="text-gold text-sm opacity-90 drop-shadow-[0_2px_4px_rgba(242,169,0,0.5)]">🔍</span>
+          </div>
+          <input
+            type="text"
+            placeholder="Search tactical focus, drills, etc..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-[#0B1921] border border-white/10 text-white text-[14px] rounded-[14px] py-3.5 pl-11 pr-4 focus:outline-none focus:border-gold/60 focus:ring-1 focus:ring-gold/30 transition-all placeholder:text-gray/60 placeholder:font-medium shadow-inner"
+          />
+        </div>
 
         {/* Filter Scroll */}
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5">
@@ -59,8 +80,16 @@ export default function LibraryClient({ initialDrills }: { initialDrills: Drill[
 
         {/* Drill Grid */}
         {filteredDrills.length === 0 ? (
-          <div className="text-center py-10 text-gray italic text-sm">
-            No drills found for this category.
+          <div className="text-center py-10 px-4">
+            {searchQuery ? (
+              <div className="text-gray text-sm font-medium leading-relaxed">
+                No drills found for <span className="text-gold font-bold">&quot;{searchQuery}&quot;</span>. <br/> Try a broader tactical focus or check the US Soccer Standards.
+              </div>
+            ) : (
+              <div className="text-gray italic text-sm">
+                No drills found for this category.
+              </div>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4">
