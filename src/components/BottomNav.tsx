@@ -38,20 +38,20 @@ export default function BottomNav() {
         </button>
       </Link>
 
-      <Link href="/">
+      <Link href="/library">
         <button
           className={`flex flex-col items-center gap-1 font-semibold text-[10px] px-3 py-1.5 transition-colors ${
-            pathname === "/drills" ? "text-gold" : "text-gray hover:text-gold"
+            pathname === "/library" ? "text-gold" : "text-gray hover:text-gold"
           }`}
         >
           <span
             className={`text-xl transition-transform ${
-              pathname === "/drills" ? "scale-110" : ""
+              pathname === "/library" ? "scale-110" : ""
             }`}
           >
             📋
           </span>
-          <span>Drills</span>
+          <span>Library</span>
         </button>
       </Link>
 

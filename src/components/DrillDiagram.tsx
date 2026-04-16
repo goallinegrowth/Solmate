@@ -38,19 +38,51 @@ function getAnimation(category: DrillCategory) {
   }
 }
 
+function getTacticalTip(category: DrillCategory) {
+  switch (category) {
+    case "Passing & Receiving":
+      return "Lock the ankle and follow through to your target.";
+    case "Shooting & Finishing":
+      return "Head down, strike through the center of the ball.";
+    case "Small-Sided Games":
+      return "Keep the ball moving. Look for triangles.";
+    case "Dribbling & Ball Control":
+      return "Keep the ball close. Head up to read defenders.";
+    case "Defending & Pressing":
+      return "Don't dive in! Force the attacker wide.";
+    default:
+      return "Stay focused and execute with intensity.";
+  }
+}
+
 export default function DrillDiagram({
   category,
   className = "",
   width = 400,
   height = 300,
 }: DrillDiagramProps) {
+  const tip = getTacticalTip(category);
+
   return (
-    <div
-      className={`inline-block rounded-xl border border-white/10 overflow-hidden shadow-lg shadow-black/20 ${className}`}
-    >
-      <SoccerField width={width} height={height}>
-        {getAnimation(category)}
-      </SoccerField>
+    <div className={`relative inline-block ${className}`}>
+      <div className="rounded-xl border border-white/10 overflow-hidden shadow-lg shadow-black/20">
+        <SoccerField width={width} height={height}>
+          {getAnimation(category)}
+        </SoccerField>
+      </div>
+
+      {/* Tactical Tip Overlay */}
+      <div className="mt-3 bg-navy-mid border-l-4 border-gold rounded-r-md px-3 py-2 flex items-start gap-2 shadow-md">
+        <div className="text-[14px] mt-0.5">🧠</div>
+        <div>
+          <div className="uppercase text-[9px] font-bold text-gray tracking-widest mb-0.5">
+            Pro Tip
+          </div>
+          <div className="text-white text-[11px] font-medium leading-snug">
+            {tip}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
